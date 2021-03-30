@@ -35,11 +35,11 @@ const TableHeader = (props) => {
 
     return (
         <WRow className="table-header">
-            <WCol size="4">
+            <WCol size="3">
                 <WButton className='table-header-section' wType="texted" onClick = {!props.isReversedTask ? handleSortByTask : handleSortByTaskReverse}>Task</WButton>
             </WCol>
 
-            <WCol size="3">
+            <WCol size="2">
                 <WButton className='table-header-section' wType="texted" onClick = {!props.isReversedDD ? handleSortByDueDate : handleSortByDueDateReverse}>Due Date</WButton>
             </WCol>
 
@@ -50,7 +50,7 @@ const TableHeader = (props) => {
                 <WButton className='table-header-section' wType="texted" onClick = {!props.isReversedStatus ? handleSortByStatus : handleSortByStatusReverse}>Assigned To</WButton>
             </WCol>
 
-            <WCol size="1">
+            <WCol size="2">
                 <div className="table-header-buttons">
                     <WButton onClick={props.disabled ? clickDisabled : props.addItem} wType="texted" className={`${buttonStyle}`}>
                         <i className="material-icons">add_box</i>
