@@ -135,6 +135,7 @@ const Homescreen = (props) => {
 	};
 
 	const createNewList = async () => {
+		props.tps.clearAllTransactions();
 		const length = todolists.length
 		const id = length >= 1 ? todolists[length - 1].id + Math.floor((Math.random() * 100) + 1) : 1;
 		let list = {
@@ -152,6 +153,7 @@ const Homescreen = (props) => {
 		DeleteTodolist({ variables: { _id: _id }, refetchQueries: [{ query: GET_DB_TODOS }] });
 		refetch();
 		setActiveList({});
+		props.tps.clearAllTransactions();
 	};
 
 	const updateListField = async (_id, field, value, prev) => {
@@ -162,8 +164,12 @@ const Homescreen = (props) => {
 	};
 
 	const handleSetActive = (id) => {
-		const todo = todolists.find(todo => todo.id === id || todo._id === id);
-		setActiveList(todo);
+		console.log(activeList.id + "AAAAA" + id);
+		if(activeList.id !== id){
+			props.tps.clearAllTransactions();
+			const todo = todolists.find(todo => todo.id === id || todo._id === id);
+			setActiveList(todo);
+		}
 	};
 
 	const sortByColumn = async (filterNumber) => {
