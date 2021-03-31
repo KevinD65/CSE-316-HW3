@@ -3,9 +3,7 @@ import React from 'react';
 import { WModal, WMHeader, WMMain, WButton } from 'wt-frontend';
 
 const Delete = (props) => {
-
-    // const [isVisible, setVisible] = useState(false);
-
+    
     const handleDelete = async () => {
         props.deleteList(props.activeid);
         props.setShowDelete(false);
