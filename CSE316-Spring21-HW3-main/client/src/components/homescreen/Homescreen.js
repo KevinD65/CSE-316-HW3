@@ -29,6 +29,7 @@ const Homescreen = (props) => {
 	const [isReversedTask, toggleReverseTask] = useState(false); //boolean value indicates how next click will cause items to be sorted
 	const [isReversedDD, toggleReverseDD] = useState(false); //boolean value indicates how next click will cause items to be sorted
 	const [isReversedStatus, toggleReverseStatus] = useState(false); //boolean value indicates how next click will cause items to be sorted
+	const [isReversedAssignedTo, toggleReverseAssignedTo] = useState(false); //boolean value indicates how next click will cause items to be sorted
 
 	const [ReorderTodoItems] 		= useMutation(mutations.REORDER_ITEMS);
 	const [UpdateTodoItemField] 	= useMutation(mutations.UPDATE_ITEM_FIELD);
@@ -38,7 +39,7 @@ const Homescreen = (props) => {
 	const [AddTodolist] 			= useMutation(mutations.ADD_TODOLIST);
 	const [AddTodoItem] 			= useMutation(mutations.ADD_ITEM);
 
-	const [SortItemsByTask]       = useMutation(mutations.SORT_ITEMS_BY_COL);
+	const [SortItemsByCol]       = useMutation(mutations.SORT_ITEMS_BY_COL);
 	const [UnsortItems]           = useMutation(mutations.UNSORT_ITEMS);
 
 
@@ -74,14 +75,28 @@ const Homescreen = (props) => {
 		return retVal;
 	}
 
+	const tpsHasUndo = () => {
+		const retVal = props.tps.hasTransactionToUndo();
+		//refetchTodos(refetch);
+		return retVal;
+	}
+
+	const tpsHasRedo = () => {
+		const retVal = props.tps.hasTransactionToRedo();
+		//refetchTodos(refetch);
+		return retVal;
+	}
+
 
 	// Creates a default item and passes it to the backend resolver.
 	// The return id is assigned to the item, and the item is appended
 	//  to the local cache copy of the active todolist. 
 	const addItem = async () => {
+		resetAllSortToggles();
 		let list = activeList;
 		const items = list.items;
-		const lastID = items.length >= 1 ? items[items.length - 1].id + 1 : 0;
+		const lastID = items.length >= 1 ? items.length /*items[items.length - 1].id + 1*/ : 0;
+		//console.log(lastID);
 		const newItem = {
 			_id: '',
 			id: lastID,
@@ -100,6 +115,7 @@ const Homescreen = (props) => {
 
 
 	const deleteItem = async (item) => {
+		resetAllSortToggles();
 		let listID = activeList._id;
 		let itemID = item._id;
 		let opcode = 0;
@@ -123,7 +139,7 @@ const Homescreen = (props) => {
 		let transaction = new EditItem_Transaction(listID, itemID, field, prev, value, flag, UpdateTodoItemField);
 		props.tps.addTransaction(transaction);
 		tpsRedo();
-
+		resetAllSortToggles();
 	};
 
 	const reorderItem = async (itemID, dir) => {
@@ -131,7 +147,7 @@ const Homescreen = (props) => {
 		let transaction = new ReorderItems_Transaction(listID, itemID, dir, ReorderTodoItems);
 		props.tps.addTransaction(transaction);
 		tpsRedo();
-
+		resetAllSortToggles();
 	};
 
 	const createNewList = async () => {
@@ -150,6 +166,7 @@ const Homescreen = (props) => {
 	};
 
 	const deleteList = async (_id) => {
+		resetAllSortToggles();
 		DeleteTodolist({ variables: { _id: _id }, refetchQueries: [{ query: GET_DB_TODOS }] });
 		refetch();
 		setActiveList({});
@@ -157,6 +174,7 @@ const Homescreen = (props) => {
 	};
 
 	const updateListField = async (_id, field, value, prev) => {
+		resetAllSortToggles();
 		let transaction = new UpdateListField_Transaction(_id, field, prev, value, UpdateTodolistField);
 		props.tps.addTransaction(transaction);
 		tpsRedo();
@@ -164,48 +182,80 @@ const Homescreen = (props) => {
 	};
 
 	const handleSetActive = (id) => {
-		console.log(activeList.id + "AAAAA" + id);
+		console.log(activeList.id);
 		if(activeList.id !== id){
 			props.tps.clearAllTransactions();
 			const todo = todolists.find(todo => todo.id === id || todo._id === id);
 			setActiveList(todo);
+			resetAllSortToggles();
 		}
 	};
 
+	const resetAllSortToggles = () => {
+		toggleReverseTask(false);
+		toggleReverseDD(false);
+		toggleReverseStatus(false);
+		toggleReverseAssignedTo(false);
+	}
+
 	const sortByColumn = async (filterNumber) => {
-		
+		if(activeList._id === undefined)
+			return
+		let listID = activeList._id;
+		let items = activeList.items;
+		let filNum = filterNumber;
+		console.log(filNum);
 		if(filterNumber === 0){
-			console.log("HELLOWORLD");
-			let listID = activeList._id;
-			let items = activeList.items;
-			let filNum = filterNumber;
-			let transaction = new SortListByCol_Transaction(listID, items, SortItemsByTask, UnsortItems, filNum);
-			props.tps.addTransaction(transaction);
-			tpsRedo();
 			toggleReverseTask(true);
+			toggleReverseDD(false);
+			toggleReverseStatus(false);
+			toggleReverseAssignedTo(false);
 		}
 		else if(filterNumber === 1){
-			let transaction = new SortListByCol_Transaction(activeList.items, SortItemsByTask, UnsortItems, filterNumber);
-			props.tps.addTransaction(transaction);
-			tpsRedo();
 			toggleReverseTask(false);
+			toggleReverseDD(false);
+			toggleReverseStatus(false);
+			toggleReverseAssignedTo(false);
 		}
 		else if(filterNumber === 2){
-
+			toggleReverseDD(true);
+			toggleReverseTask(false);
+			toggleReverseStatus(false);
+			toggleReverseAssignedTo(false);
 		}
 		else if(filterNumber === 3){
-
+			toggleReverseDD(false);
+			toggleReverseTask(false);
+			toggleReverseStatus(false);
+			toggleReverseAssignedTo(false);
 		}
 		else if(filterNumber === 4){
-
+			toggleReverseStatus(true);
+			toggleReverseTask(false);
+			toggleReverseDD(false);
+			toggleReverseAssignedTo(false);
 		}
 		else if(filterNumber === 5){
-
+			toggleReverseStatus(false);
+			toggleReverseTask(false);
+			toggleReverseDD(false);
+			toggleReverseAssignedTo(false);
 		}
 		else if(filterNumber === 6){
-
+			toggleReverseAssignedTo(true);
+			toggleReverseTask(false);
+			toggleReverseDD(false);
+			toggleReverseStatus(false);
 		}
-		
+		else if(filterNumber === 7){
+			toggleReverseAssignedTo(false);
+			toggleReverseTask(false);
+			toggleReverseDD(false);
+			toggleReverseStatus(false);
+		}
+		let transaction = new SortListByCol_Transaction(listID.toString(), items, SortItemsByCol, UnsortItems, parseInt(filNum));
+		props.tps.addTransaction(transaction);
+		tpsRedo();
 	}
 
 	
@@ -258,7 +308,6 @@ const Homescreen = (props) => {
 							<SidebarContents
 								todolists={todolists} activeid={activeList.id} auth={auth}
 								handleSetActive={handleSetActive} createNewList={createNewList}
-								undo={tpsUndo} redo={tpsRedo}
 								updateListField={updateListField}
 							/>
 							:
@@ -275,11 +324,14 @@ const Homescreen = (props) => {
 									editItem={editItem} reorderItem={reorderItem}
 									setShowDelete={setShowDelete}
 									activeList={activeList} setActiveList={setActiveList}
-									
 									sortByColumn={sortByColumn}
 									isReversedTask={isReversedTask}
 									isReversedDD={isReversedDD}
 									isReversedStatus={isReversedStatus}
+									isReversedAssignedTo={isReversedAssignedTo}
+									tpsUndo={tpsUndo} tpsRedo={tpsRedo}
+									hasUndo={tpsHasUndo} hasRedo={tpsHasRedo}
+									auth={auth}
 									
 								/>
 							</div>
@@ -290,15 +342,15 @@ const Homescreen = (props) => {
 			</WLMain>
 
 			{
-				showDelete && (<Delete deleteList={deleteList} activeid={activeList._id} setShowDelete={setShowDelete} />)
+				showDelete && (<Delete deleteList={deleteList} activeid={activeList._id} setShowDelete={setShowDelete} showDelete={showDelete}/>)
 			}
 
 			{
-				showCreate && (<CreateAccount fetchUser={props.fetchUser} setShowCreate={setShowCreate} />)
+				showCreate && (<CreateAccount fetchUser={props.fetchUser} setShowCreate={setShowCreate} showCreate={showCreate}/>)
 			}
 
 			{
-				showLogin && (<Login fetchUser={props.fetchUser} refetchTodos={refetch}setShowLogin={setShowLogin} />)
+				showLogin && (<Login fetchUser={props.fetchUser} refetchTodos={refetch}setShowLogin={setShowLogin} showLogin={showLogin}/>)
 			}
 
 		</WLayout>

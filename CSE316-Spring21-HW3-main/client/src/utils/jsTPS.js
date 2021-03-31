@@ -94,7 +94,6 @@ export class UpdateListItems_Transaction extends jsTPS_Transaction {
         this.opcode = opcode;
     }
     async doTransaction() {
-        // console.log(this.listID + "DAMNNN");
 		let data;
         this.opcode === 0 ? { data } = await this.deleteFunction({
 							variables: {itemId: this.itemID, _id: this.listID}})
@@ -122,22 +121,18 @@ export class UpdateListItems_Transaction extends jsTPS_Transaction {
 export class SortListByCol_Transaction extends jsTPS_Transaction {
     constructor(listID, listBeforeSort, sortFunc, revertFunc, filterNumber){
         super();
-        this.listID = listID;
+        this.id = listID;
         this.prev = listBeforeSort;
         this.sortingFunction = sortFunc;
         this.revertingFunction = revertFunc;
         this.filterNumber = filterNumber;
     }
     async doTransaction() {
-        console.log("MADE IT HERE: " + this.listID + " SPACE"  + this.filterNumber);
-        this.sortingFunction({variables: {_id: this.listID, orientation: this.filterNumber}});
-        /*
-        const { data } = await this.sortingFunction({variables: {_id: this.listID, orientation: this.filterNumber}});
+        const { data } = await this.sortingFunction({ variables: { _id: this.id, orientation: this.filterNumber }});
         return data;
-        */
     }
     async undoTransaction() {
-        const { data } = await this.revertingFunction({variables: {prevList: this.prev}});
+        const { data } = await this.revertingFunction({variables: {_id: this.id, prevList: this.prev}});
         return data;
     }
 }

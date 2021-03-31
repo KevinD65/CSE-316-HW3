@@ -94,12 +94,26 @@ export const UPDATE_TODOLIST_FIELD = gql`
 
 export const SORT_ITEMS_BY_COL = gql`
 	mutation SortItemsByColumn($_id: String!, $orientation: Int!) {
-		sortItemsByColumn(_id: $_id, orientation: $orientation)
+		sortItemsByColumn(_id: $_id, orientation: $orientation) {
+			_id
+			id
+			description
+			due_date
+			assigned_to
+			completed
+		}
 	}
 `;
 
 export const UNSORT_ITEMS = gql`
-	mutation RevertSort($_id: String!, $prevList: previousList){
-		revertSort(_id: $_id, prevList: $prevList)
+	mutation RevertSort($_id: String!, $prevList: [ItemInput]){
+		revertSort(_id: $_id, prevList: $prevList) {
+			_id
+			id
+			description
+			due_date
+			assigned_to
+			completed
+		}
 	}
 `;

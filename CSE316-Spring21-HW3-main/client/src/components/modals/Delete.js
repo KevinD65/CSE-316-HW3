@@ -4,14 +4,15 @@ import { WModal, WMHeader, WMMain, WButton } from 'wt-frontend';
 
 const Delete = (props) => {
 
+    // const [isVisible, setVisible] = useState(false);
+
     const handleDelete = async () => {
         props.deleteList(props.activeid);
         props.setShowDelete(false);
     }
 
     return (
-        // Replace div with WModal
-        <div className="delete-modal">
+        <WModal className="delete-modal" visible={props.showDelete}>
             <div className="modal-header" onClose={() => props.setShowDelete(false)}>
                 Delete List?
 			</div>
@@ -26,7 +27,7 @@ const Delete = (props) => {
 				</WButton>
             </div>
 
-        </div>
+        </WModal>
     );
 }
 

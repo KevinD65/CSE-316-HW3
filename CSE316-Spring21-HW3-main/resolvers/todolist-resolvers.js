@@ -65,7 +65,7 @@ module.exports = {
 				owner: owner,
 				items: items
 			});
-			const updated = newList.save();
+			const updated = newList.save(); //find a way to insert at the beginning so selected list appears at top
 			if(updated) return objectId;
 			else return ('Could not add todolist');
 		},
@@ -166,51 +166,157 @@ module.exports = {
 		},
 		
 		sortItemsByColumn: async (_, args) => {
-			const { _id, orientation} = args;
+			const { _id, orientation } = args;
 			const listID = new ObjectId(_id);
 			const found = await Todolist.findOne({_id: listID}); //ensure that a list with the ListID exists
 			let listItems = found.items;
 			if(orientation === 0){ //sort by task
-				for(let i = 0; i < listItems.length; i++){
-					let swapIndex = i;
+				let flag = false;
+				for(let i = 0; i < listItems.length - 1; i++){
+					let lowest = i;
+					let temp = listItems[i];
 					for(let j = i + 1; j < listItems.length; j++){
-						if(listItems[j].description.compareTo(lowest.description) < 1){
-							swapIndex = j;
+						if(listItems[j].description.toUpperCase().localeCompare(listItems[lowest].description.toUpperCase()) < 0){
+							lowest = j;
+							flag = true;
 						}
 					}
-					let temp = listItems[j];
-					listItems[j] = listItems[i];
+					listItems[i] = listItems[lowest];
+					listItems[lowest] = temp;
+				}
+				if(!flag){
+					let middle = Math.floor(listItems.length/2);
+					let endIndex = listItems.length - 1;
+					for(let i = 0; i < middle; i++){
+						let temp = listItems[endIndex - i];
+						listItems[endIndex - i] = listItems[i];
+						listItems[i] = temp;
+					}
+				}
+				await Todolist.updateOne({ _id: listID }, { items: listItems});
+			}
+			else if(orientation === 1){ //sort by task (reverse)
+				let middle = Math.floor(listItems.length/2);
+				let endIndex = listItems.length - 1;
+				for(let i = 0; i < middle; i++){
+					let temp = listItems[endIndex - i];
+					listItems[endIndex - i] = listItems[i];
 					listItems[i] = temp;
 				}
 				await Todolist.updateOne({ _id: listID }, { items: listItems});
-				return listItems;
 			}
-			else if(orientation === 1){ //sort by task (reverse)
-				for(let i = 0; i < Math.ceil(listItems.length/2); i++){
-					let temp = listItems[listItems.length - 1 - i];
-					listItems[listItems.length - 1 - i] = listItems[i];
+			else if(orientation === 2){ //sort by due date
+				let flag = false;
+				for(let i = 0; i < listItems.length - 1; i++){
+					let lowest = i;
+					let temp = listItems[i];
+					for(let j = i + 1; j < listItems.length; j++){
+						if(listItems[j].due_date.toString().localeCompare(listItems[lowest].due_date.toString()) < 0){
+							lowest = j;
+							flag = true;
+						}
+					}
+					listItems[i] = listItems[lowest];
+					listItems[lowest] = temp;
+				}
+				if(!flag){
+					let middle = Math.floor(listItems.length/2);
+					let endIndex = listItems.length - 1;
+					for(let i = 0; i < middle; i++){
+						let temp = listItems[endIndex - i];
+						listItems[endIndex - i] = listItems[i];
+						listItems[i] = temp;
+					}
+				}
+				await Todolist.updateOne({ _id: listID }, { items: listItems});
+			}
+			else if(orientation === 3){ //sort by due date (reverse)
+				let middle = Math.floor(listItems.length/2);
+				let endIndex = listItems.length - 1;
+				for(let i = 0; i < middle; i++){
+					let temp = listItems[endIndex - i];
+					listItems[endIndex - i] = listItems[i];
 					listItems[i] = temp;
 				}
-				return listItems;
+				await Todolist.updateOne({ _id: listID }, { items: listItems});
 			}
-			else if(orientation === 2){
-				//sort by due date
+			else if(orientation === 4){ // sort by status
+				let flag = false;
+				for(let i = 0; i < listItems.length - 1; i++){
+					let lowest = i;
+					let temp = listItems[i];
+					for(let j = i + 1; j < listItems.length; j++){
+						if(listItems[j].completed.toString().localeCompare(listItems[lowest].completed.toString()) < 0){
+							lowest = j;
+							flag = true;
+						}
+					}
+					listItems[i] = listItems[lowest];
+					listItems[lowest] = temp;
+				}
+				if(!flag){
+					let middle = Math.floor(listItems.length/2);
+					let endIndex = listItems.length - 1;
+					for(let i = 0; i < middle; i++){
+						let temp = listItems[endIndex - i];
+						listItems[endIndex - i] = listItems[i];
+						listItems[i] = temp;
+					}
+				}
+				await Todolist.updateOne({ _id: listID }, { items: listItems});
 			}
-			else if(orientation === 3){
-				//sort by due date (reverse)
+			else if(orientation === 5){ // sort by status (reverse)
+				let middle = Math.floor(listItems.length/2);
+				let endIndex = listItems.length - 1;
+				for(let i = 0; i < middle; i++){
+					let temp = listItems[endIndex - i];
+					listItems[endIndex - i] = listItems[i];
+					listItems[i] = temp;
+				}
+				await Todolist.updateOne({ _id: listID }, { items: listItems});
 			}
-			else if(orientation === 4){	
-				//sort by status
+			else if(orientation === 6){
+				let flag = false;
+				for(let i = 0; i < listItems.length - 1; i++){
+					let lowest = i;
+					let temp = listItems[i];
+					for(let j = i + 1; j < listItems.length; j++){
+						if(listItems[j].assigned_to.toUpperCase().localeCompare(listItems[lowest].assigned_to.toUpperCase()) < 0){
+							lowest = j;
+							flag = true;
+						}
+					}
+					listItems[i] = listItems[lowest];
+					listItems[lowest] = temp;
+				}
+				if(!flag){
+					let middle = Math.floor(listItems.length/2);
+					let endIndex = listItems.length - 1;
+					for(let i = 0; i < middle; i++){
+						let temp = listItems[endIndex - i];
+						listItems[endIndex - i] = listItems[i];
+						listItems[i] = temp;
+					}
+				}
+				await Todolist.updateOne({ _id: listID }, { items: listItems});
 			}
-			else if(orientation === 5){
-				//sort by status (reverse)
+			else if(orientation === 7){
+				let middle = Math.floor(listItems.length/2);
+				let endIndex = listItems.length - 1;
+				for(let i = 0; i < middle; i++){
+					let temp = listItems[endIndex - i];
+					listItems[endIndex - i] = listItems[i];
+					listItems[i] = temp;
+				}
+				await Todolist.updateOne({ _id: listID }, { items: listItems});
 			}
+			return listItems;
 		},
 		
 		revertSort: async (_, args) => {
 			const {_id, prevList} = args;
 			const listID = new ObjectId(_id)
-			await Todolist.findOne({_id: listID})
+			//await Todolist.findOne({_id: listID})
 			await Todolist.updateOne({ _id: listID }, { items: prevList});
 			return prevList;
 		}
