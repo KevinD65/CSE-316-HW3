@@ -201,6 +201,26 @@ html, body {
     color: grey;
 }
 
+.undo-redo-disabled:hover {
+    cursor: default;
+}
+
 .table-entry-buttons {
     color: $text-color;
+}
+
+.up-down-disabled {
+    color: grey;
+}
+
+.up-down-disabled:hover {
+   cursor: default;
+}
+
+.disabled-addlist-button {
+    color: grey;
+}
+
+.disabled-add-list-button:hover {
+    cursor: default;
 }

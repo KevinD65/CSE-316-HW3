@@ -12,6 +12,7 @@ const TableContents = (props) => {
                         data={entry} key={entry.id}
                         deleteItem={props.deleteItem} reorderItem={props.reorderItem}
                         editItem={props.editItem}
+                        activeList={props.activeList}
                     />
                 ))
             }

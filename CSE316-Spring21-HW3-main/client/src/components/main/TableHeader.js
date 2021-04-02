@@ -41,6 +41,12 @@ const TableHeader = (props) => {
     const handleSortByAssignedToReverse = () => {
         props.SBC(7);
     }
+
+    const handleCloseList = () => {
+        props.clearTransaction();
+        props.setActiveList({});
+
+    }
     
     return (
         <WRow className="table-header">
@@ -83,7 +89,7 @@ const TableHeader = (props) => {
                     <WButton onClick={props.disabled ? clickDisabled : props.setShowDelete} wType="texted" className={`${buttonStyle}`}>
                         <i className="material-icons">delete_outline</i>
                     </WButton>
-                    <WButton onClick={props.disabled ? clickDisabled : () => props.setActiveList({})} wType="texted" className={`${buttonStyle}`}>
+                    <WButton onClick={props.disabled ? clickDisabled : handleCloseList} wType="texted" className={`${buttonStyle}`}>
                         <i className="material-icons">close</i>
                     </WButton>
                 </div>

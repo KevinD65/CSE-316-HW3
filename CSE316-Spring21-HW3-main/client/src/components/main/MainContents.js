@@ -19,6 +19,8 @@ const MainContents = (props) => {
                 updateListField={props.updateListField}
                 hasUndo={props.hasUndo} hasRedo={props.hasRedo}
                 auth={props.auth}
+
+                clearTransaction={props.clearTransactions}
             />
             <TableContents
                 key={props.activeList.id} activeList={props.activeList}

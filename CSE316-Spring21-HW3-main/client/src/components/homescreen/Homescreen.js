@@ -150,22 +150,19 @@ const Homescreen = (props) => {
 		resetAllSortToggles();
 	};
 
-	const createNewList = async () => {
-		console.log(activeList._id + "HI");
-		if(activeList.length === 0){
-			props.tps.clearAllTransactions();
-			const length = todolists.length
-			const id = length >= 1 ? todolists[length - 1].id + Math.floor((Math.random() * 100) + 1) : 1;
-			let list = {
-				_id: '',
-				id: id,
-				name: 'Untitled',
-				owner: props.user._id,
-				items: [],
-			}
-			const { data } = await AddTodolist({ variables: { todolist: list }, refetchQueries: [{ query: GET_DB_TODOS }] });
-			setActiveList(list)
+	const createNewList = async () => { //fix
+		props.tps.clearAllTransactions();
+		const length = todolists.length
+		const id = length >= 1 ? todolists[length - 1].id + Math.floor((Math.random() * 100) + 1) : 1;
+		let list = {
+			_id: '',
+			id: id,
+			name: 'Untitled',
+			owner: props.user._id,
+			items: [],
 		}
+		const { data } = await AddTodolist({ variables: { todolist: list }, refetchQueries: [{ query: GET_DB_TODOS }] });
+		setActiveList(list);
 	};
 
 	const deleteList = async (_id) => {
@@ -185,7 +182,6 @@ const Homescreen = (props) => {
 	};
 
 	const handleSetActive = (id) => {
-		console.log(activeList.id);
 		if(activeList.id !== id){
 			props.tps.clearAllTransactions();
 			const todo = todolists.find(todo => todo.id === id || todo._id === id);
@@ -261,6 +257,9 @@ const Homescreen = (props) => {
 		tpsRedo();
 	}
 
+	const clearTransactions = () => {
+		props.tps.clearAllTransactions();
+	}
 	
 	/*
 		Since we only have 3 modals, this sort of hardcoding isnt an issue, if there
@@ -312,6 +311,7 @@ const Homescreen = (props) => {
 								todolists={todolists} activeid={activeList.id} auth={auth}
 								handleSetActive={handleSetActive} createNewList={createNewList}
 								updateListField={updateListField}
+								activeList={activeList}
 							/>
 							:
 							<></>
@@ -335,7 +335,7 @@ const Homescreen = (props) => {
 									tpsUndo={tpsUndo} tpsRedo={tpsRedo}
 									hasUndo={tpsHasUndo} hasRedo={tpsHasRedo}
 									auth={auth}
-									
+									clearTransactions={clearTransactions}
 								/>
 							</div>
 						:
