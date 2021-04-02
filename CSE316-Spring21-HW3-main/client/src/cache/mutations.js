@@ -106,7 +106,7 @@ export const SORT_ITEMS_BY_COL = gql`
 `;
 
 export const UNSORT_ITEMS = gql`
-	mutation RevertSort($_id: String!, $prevList: [ItemInput]){
+	mutation RevertSort($_id: String!, $prevList: [ItemInput]!){
 		revertSort(_id: $_id, prevList: $prevList) {
 			_id
 			id

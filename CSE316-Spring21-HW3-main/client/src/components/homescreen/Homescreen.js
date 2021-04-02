@@ -151,18 +151,21 @@ const Homescreen = (props) => {
 	};
 
 	const createNewList = async () => {
-		props.tps.clearAllTransactions();
-		const length = todolists.length
-		const id = length >= 1 ? todolists[length - 1].id + Math.floor((Math.random() * 100) + 1) : 1;
-		let list = {
-			_id: '',
-			id: id,
-			name: 'Untitled',
-			owner: props.user._id,
-			items: [],
+		console.log(activeList._id + "HI");
+		if(activeList.length === 0){
+			props.tps.clearAllTransactions();
+			const length = todolists.length
+			const id = length >= 1 ? todolists[length - 1].id + Math.floor((Math.random() * 100) + 1) : 1;
+			let list = {
+				_id: '',
+				id: id,
+				name: 'Untitled',
+				owner: props.user._id,
+				items: [],
+			}
+			const { data } = await AddTodolist({ variables: { todolist: list }, refetchQueries: [{ query: GET_DB_TODOS }] });
+			setActiveList(list)
 		}
-		const { data } = await AddTodolist({ variables: { todolist: list }, refetchQueries: [{ query: GET_DB_TODOS }] });
-		setActiveList(list)
 	};
 
 	const deleteList = async (_id) => {
@@ -253,7 +256,7 @@ const Homescreen = (props) => {
 			toggleReverseDD(false);
 			toggleReverseStatus(false);
 		}
-		let transaction = new SortListByCol_Transaction(listID.toString(), items, SortItemsByCol, UnsortItems, parseInt(filNum));
+		let transaction = new SortListByCol_Transaction(listID, items, SortItemsByCol, UnsortItems, parseInt(filNum));
 		props.tps.addTransaction(transaction);
 		tpsRedo();
 	}

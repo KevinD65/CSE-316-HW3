@@ -122,7 +122,10 @@ export class SortListByCol_Transaction extends jsTPS_Transaction {
     constructor(listID, listBeforeSort, sortFunc, revertFunc, filterNumber){
         super();
         this.id = listID;
-        this.prev = listBeforeSort;
+        this.prev = [];
+        for(let list of listBeforeSort){
+            this.prev.push({_id: list._id, id: list.id, description: list.description, due_date: list.due_date, assigned_to: list.assigned_to, completed: list.completed})
+        }
         this.sortingFunction = sortFunc;
         this.revertingFunction = revertFunc;
         this.filterNumber = filterNumber;

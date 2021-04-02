@@ -316,7 +316,6 @@ module.exports = {
 		revertSort: async (_, args) => {
 			const {_id, prevList} = args;
 			const listID = new ObjectId(_id)
-			//await Todolist.findOne({_id: listID})
 			await Todolist.updateOne({ _id: listID }, { items: prevList});
 			return prevList;
 		}
