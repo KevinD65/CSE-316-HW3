@@ -26,6 +26,7 @@ export const GET_DB_TODOS = gql`
 				assigned_to
 				completed
 			}
+			position
 		}
 	}
 `;

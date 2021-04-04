@@ -41,7 +41,9 @@ module.exports = {
 			const objectId = new ObjectId();
 			const found = await Todolist.findOne({_id: listId});
 			if(!found) return ('Todolist not found');
-			item._id = objectId;
+			if(item._id === ''){
+				item._id = objectId;
+			}
 			let listItems = found.items;
 			listItems.push(item);
 			
@@ -57,15 +59,16 @@ module.exports = {
 		addTodolist: async (_, args) => {
 			const { todolist } = args;
 			const objectId = new ObjectId();
-			const { id, name, owner, items } = todolist;
+			const { id, name, owner, items, position } = todolist;
 			const newList = new Todolist({
 				_id: objectId,
 				id: id,
 				name: name,
 				owner: owner,
-				items: items
+				items: items,
+				position: position
 			});
-			const updated = newList.save(); //find a way to insert at the beginning so selected list appears at top
+			const updated = await newList.save();
 			if(updated) return objectId;
 			else return ('Could not add todolist');
 		},
@@ -318,6 +321,13 @@ module.exports = {
 			const listID = new ObjectId(_id)
 			await Todolist.updateOne({ _id: listID }, { items: prevList});
 			return prevList;
+		},
+
+		updatePosition: async (_, args) => {
+			const {_id, newPosition} = args;
+			const listID = new ObjectId(_id);
+			await Todolist.updateOne({ _id: listID }, { position: newPosition });
+			return("Successfully updated position");
 		}
 	}
 }

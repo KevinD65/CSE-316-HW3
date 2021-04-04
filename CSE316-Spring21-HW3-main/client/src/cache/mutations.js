@@ -117,3 +117,9 @@ export const UNSORT_ITEMS = gql`
 		}
 	}
 `;
+
+export const UPDATE_POSITION = gql`
+	mutation UpdatePosition($_id: String!, $newPosition: Int!) {
+		updatePosition(_id: $_id, newPosition: $newPosition)
+	}
+`;

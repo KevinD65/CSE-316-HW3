@@ -39,8 +39,9 @@ const Homescreen = (props) => {
 	const [AddTodolist] 			= useMutation(mutations.ADD_TODOLIST);
 	const [AddTodoItem] 			= useMutation(mutations.ADD_ITEM);
 
-	const [SortItemsByCol]       = useMutation(mutations.SORT_ITEMS_BY_COL);
-	const [UnsortItems]           = useMutation(mutations.UNSORT_ITEMS);
+	const [SortItemsByCol]      	= useMutation(mutations.SORT_ITEMS_BY_COL);
+	const [UnsortItems]           	= useMutation(mutations.UNSORT_ITEMS);
+	const [UpdatePosition]			= useMutation(mutations.UPDATE_POSITION);
 
 
 	const { loading, error, data, refetch } = useQuery(GET_DB_TODOS);
@@ -54,11 +55,18 @@ const Homescreen = (props) => {
 		const { loading, error, data } = await refetch();
 		if (data) {
 			todolists = data.getAllTodos;
+			/*
+			let myList = [];
+			for(let i = 0; i < todolists.length; i++){
+				myList.push(todolists.find(list => list.position === i));
+			}
+			todolists = myList;
+			*/
+			//WHERE TO PLACE CODE THAT DISPLAYS BY ORDER???
 			if (activeList._id) {
 				let tempID = activeList._id;
 				let list = todolists.find(list => list._id === tempID);
 				setActiveList(list);
-
 			}
 		}
 	}
@@ -96,7 +104,6 @@ const Homescreen = (props) => {
 		let list = activeList;
 		const items = list.items;
 		const lastID = items.length >= 1 ? items.length /*items[items.length - 1].id + 1*/ : 0;
-		//console.log(lastID);
 		const newItem = {
 			_id: '',
 			id: lastID,
@@ -151,22 +158,33 @@ const Homescreen = (props) => {
 	};
 
 	const createNewList = async () => { //fix
+		//console.log("HERERERE");
 		props.tps.clearAllTransactions();
 		const length = todolists.length
 		const id = length >= 1 ? todolists[length - 1].id + Math.floor((Math.random() * 100) + 1) : 1;
+		const lastPosition = todolists.length >= 1 ? todolists.length : 0;
 		let list = {
 			_id: '',
 			id: id,
 			name: 'Untitled',
 			owner: props.user._id,
 			items: [],
+			position: lastPosition
 		}
 		const { data } = await AddTodolist({ variables: { todolist: list }, refetchQueries: [{ query: GET_DB_TODOS }] });
+		// const myID = todolists.find(todo => todo.position === lastPosition);
+		// console.log(id + "  " + myID);
+		//handleSetActive(myID._id);
 		setActiveList(list);
 	};
 
 	const deleteList = async (_id) => {
 		resetAllSortToggles();
+		const todo = todolists.find(todo => todo._id === _id);
+		for(let i = todo.position; i < todolists.length - 1; i++){
+			let nextListInOrder = todolists.find(list => list.position === i + 1);
+			UpdatePosition({ variables: {_id: nextListInOrder._id, newPosition: i }}); //every list after the deleted one gets its position lowered by 1
+		}
 		DeleteTodolist({ variables: { _id: _id }, refetchQueries: [{ query: GET_DB_TODOS }] });
 		refetch();
 		setActiveList({});
@@ -182,12 +200,31 @@ const Homescreen = (props) => {
 	};
 
 	const handleSetActive = (id) => {
-		if(activeList.id !== id){
+		/*
+		console.log(id + "HI");
+		const todo = todolists.find(todo => todo.id === id || todo._id === id);
+		console.log(todo);
+		*/
+		//if(activeList.id !== id){
 			props.tps.clearAllTransactions();
 			const todo = todolists.find(todo => todo.id === id || todo._id === id);
+			//console.log(todo.position + "hello");
+			UpdatePosition({ variables: {_id: todo._id, newPosition: 0}}); //set the newly selected list's position to 0
+			for(let i = 0; i < todo.position; i++){
+				let nextListInOrder = todolists.find(list => list.position === i);
+				//console.log(todolists.find(list => list.position === i) + "hi");
+				UpdatePosition({ variables: {_id: nextListInOrder._id, newPosition: i + 1 }}); //every successive list position gets moved down one
+			}
+			let myList = [];
+			for(let i = 0; i < todolists.length; i++){
+				myList.push(todolists.find(list => list.position === i));
+				
+			}
+			todolists = myList;
+			//console.log(myList[0]);
 			setActiveList(todo);
 			resetAllSortToggles();
-		}
+		//}
 	};
 
 	const resetAllSortToggles = () => {
@@ -260,6 +297,17 @@ const Homescreen = (props) => {
 	const clearTransactions = () => {
 		props.tps.clearAllTransactions();
 	}
+
+	const controlZcontrolY = (event) => {
+		console.log("KEYYYYS");
+		console.log(props.tps.hasTransactionToUndo());
+		if(event.ctrlKey && event.keyCode === 90 && props.tps.hasTransactionToUndo()){
+			tpsUndo();
+		}
+		else if(event.ctrlKey && event.keyCode === 89 && props.tps.hasTransactionToRedo()){
+			tpsRedo();
+		}
+	}
 	
 	/*
 		Since we only have 3 modals, this sort of hardcoding isnt an issue, if there
@@ -285,7 +333,7 @@ const Homescreen = (props) => {
 	}
 
 	return (
-		<WLayout wLayout="header-lside">
+		<WLayout wLayout="header-lside" onKeyDown = {controlZcontrolY} tabIndex = {0}>
 			<WLHeader>
 				<WNavbar color="colored">
 					<ul>

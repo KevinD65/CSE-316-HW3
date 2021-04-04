@@ -20,6 +20,10 @@ const todolistSchema = new Schema(
 			required: true
 		},
 		items: [Item],
+		position: {
+			type: Number,
+			required: true
+		},
 	},
 	{ timestamps: true }
 );

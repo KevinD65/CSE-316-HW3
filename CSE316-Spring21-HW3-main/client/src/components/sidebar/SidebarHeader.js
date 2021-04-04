@@ -12,7 +12,7 @@ const SidebarHeader = (props) => {
             <WCol size="5">
                 {
                     props.auth && <div className="sidebar-options">
-                        {props.disabled
+                        {!props.disabled
                         ? <WButton className="sidebar-buttons disabled-addlist-button" shape="rounded">
                         <i className="material-icons">add</i>
                         </WButton>

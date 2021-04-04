@@ -8,6 +8,7 @@ const typeDefs = gql `
 		name: String!
 		owner: String!
 		items: [Item]
+		position: Int!
 	}
 	type Item {
 		_id: String!
@@ -31,6 +32,7 @@ const typeDefs = gql `
 		reorderItems(itemId: String!, _id: String!, direction: Int!): [Item]
 		sortItemsByColumn(_id: String!, orientation: Int!): [Item]
 		revertSort(_id: String!, prevList: [ItemInput]!): [Item]
+		updatePosition(_id: String!, newPosition: Int!): String
 	}
 	input FieldInput {
 		_id: String
@@ -43,6 +45,7 @@ const typeDefs = gql `
 		name: String
 		owner: String
 		items: [ItemInput]
+		position: Int
 	}
 	input ItemInput {
 		_id: String
