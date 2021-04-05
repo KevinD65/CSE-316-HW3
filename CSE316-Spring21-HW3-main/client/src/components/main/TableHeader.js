@@ -34,7 +34,6 @@ const TableHeader = (props) => {
     }
 
     const handleSortByAssignedTo = () => {
-        console.log("TROLL");
         props.SBC(6);
     }
 

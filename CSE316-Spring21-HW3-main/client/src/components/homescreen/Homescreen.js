@@ -47,22 +47,45 @@ const Homescreen = (props) => {
 	const { loading, error, data, refetch } = useQuery(GET_DB_TODOS);
 	if(loading) { console.log(loading, 'loading'); }
 	if(error) { console.log(error, 'error'); }
-	if(data) { todolists = data.getAllTodos; }
+	if(data) { data.getAllTodos.map(todo => todolists.push(todo)); 
+		let temp;
+		for(let i = 0; i < todolists.length - 1; i++){
+			for(let j = i + 1; j < todolists.length; j++){
+				if(todolists[j].position < todolists[i].position){
+					temp = todolists[i];
+					todolists[i] = todolists[j];
+					todolists[j] = temp;
+				}
+			}
+		}}
 
 	const auth = props.user === null ? false : true;
 
 	const refetchTodos = async (refetch) => {
 		const { loading, error, data } = await refetch();
 		if (data) {
-			todolists = data.getAllTodos;
-			/*
-			let myList = [];
-			for(let i = 0; i < todolists.length; i++){
-				myList.push(todolists.find(list => list.position === i));
+			todolists = [];
+			data.getAllTodos.map(todo => todolists.push(todo));
+			//console.log(todolists[0].name + "hello" + todolists[1].name + "hello" + todolists[2].name + "hello");
+ 
+			let temp;
+			for(let i = 0; i < todolists.length - 1; i++){
+				for(let j = i + 1; j < todolists.length; j++){
+					if(todolists[j].position < todolists[i].position){
+						temp = todolists[i];
+						todolists[i] = todolists[j];
+						todolists[j] = temp;
+					}
+				}
 			}
-			todolists = myList;
-			*/
-			//WHERE TO PLACE CODE THAT DISPLAYS BY ORDER???
+
+			//console.log(todolists[0].name + "hello" + todolists[1].name + "hello" + todolists[2].name + "hello");
+			
+			console.log(todolists);
+			for(let a = 0; a < todolists.length; a++){
+				console.log(todolists[a].position);
+			}
+
 			if (activeList._id) {
 				let tempID = activeList._id;
 				let list = todolists.find(list => list._id === tempID);
@@ -121,7 +144,7 @@ const Homescreen = (props) => {
 	};
 
 
-	const deleteItem = async (item) => {
+	const deleteItem = async (item, index) => {
 		resetAllSortToggles();
 		let listID = activeList._id;
 		let itemID = item._id;
@@ -134,7 +157,7 @@ const Homescreen = (props) => {
 			assigned_to: item.assigned_to,
 			completed: item.completed
 		}
-		let transaction = new UpdateListItems_Transaction(listID, itemID, itemToDelete, opcode, AddTodoItem, DeleteTodoItem);
+		let transaction = new UpdateListItems_Transaction(listID, itemID, itemToDelete, opcode, AddTodoItem, DeleteTodoItem, index);
 		props.tps.addTransaction(transaction);
 		tpsRedo();
 	};
@@ -158,7 +181,6 @@ const Homescreen = (props) => {
 	};
 
 	const createNewList = async () => { //fix
-		//console.log("HERERERE");
 		props.tps.clearAllTransactions();
 		const length = todolists.length
 		const id = length >= 1 ? todolists[length - 1].id + Math.floor((Math.random() * 100) + 1) : 1;
@@ -175,12 +197,27 @@ const Homescreen = (props) => {
 		// const myID = todolists.find(todo => todo.position === lastPosition);
 		// console.log(id + "  " + myID);
 		//handleSetActive(myID._id);
-		setActiveList(list);
+		//handleSetActive(data["addTodolist"]);
+		await refetchTodos(refetch);
+		let v = todolists.find(todo => todo._id === data["addTodolist"]);
+		handleSetActive(v._id);
+		/*
+		setTimeout(() => {
+			let v = todolists.find(todo => todo._id === data["addTodolist"]);
+			handleSetActive(v._id);
+			//setActiveList(v);
+			refetchTodos(refetch);
+		}, 50);
+		//let v = todolists.find(todo => todo._id === data["addTodolist"]);
+		//setActiveList(v);
+		refetchTodos(refetch);
+		//console.log(activeList._id + "hi");*/
 	};
 
 	const deleteList = async (_id) => {
 		resetAllSortToggles();
 		const todo = todolists.find(todo => todo._id === _id);
+		console.log(todo.position);
 		for(let i = todo.position; i < todolists.length - 1; i++){
 			let nextListInOrder = todolists.find(list => list.position === i + 1);
 			UpdatePosition({ variables: {_id: nextListInOrder._id, newPosition: i }}); //every list after the deleted one gets its position lowered by 1
@@ -199,7 +236,7 @@ const Homescreen = (props) => {
 
 	};
 
-	const handleSetActive = (id) => {
+	const handleSetActive = async (id) => {
 		/*
 		console.log(id + "HI");
 		const todo = todolists.find(todo => todo.id === id || todo._id === id);
@@ -208,21 +245,26 @@ const Homescreen = (props) => {
 		//if(activeList.id !== id){
 			props.tps.clearAllTransactions();
 			const todo = todolists.find(todo => todo.id === id || todo._id === id);
-			//console.log(todo.position + "hello");
-			UpdatePosition({ variables: {_id: todo._id, newPosition: 0}}); //set the newly selected list's position to 0
+			console.log(todo.position + "hello");
 			for(let i = 0; i < todo.position; i++){
-				let nextListInOrder = todolists.find(list => list.position === i);
+				console.log("SHIFT");
+				let nextListInOrder = await todolists.find(list => list.position === i);
+				console.log(nextListInOrder.name);
 				//console.log(todolists.find(list => list.position === i) + "hi");
-				UpdatePosition({ variables: {_id: nextListInOrder._id, newPosition: i + 1 }}); //every successive list position gets moved down one
+				await UpdatePosition({ variables: {_id: nextListInOrder._id, newPosition: i + 1 }}); //every successive list position gets moved down one
 			}
+			await UpdatePosition({ variables: {_id: todo._id, newPosition: 0}}); //set the newly selected list's position to 0
+			/*
 			let myList = [];
 			for(let i = 0; i < todolists.length; i++){
 				myList.push(todolists.find(list => list.position === i));
 				
 			}
 			todolists = myList;
-			//console.log(myList[0]);
+			*/
+			await refetchTodos(refetch);
 			setActiveList(todo);
+			//refetchTodos(refetch);
 			resetAllSortToggles();
 		//}
 	};
@@ -299,7 +341,6 @@ const Homescreen = (props) => {
 	}
 
 	const controlZcontrolY = (event) => {
-		console.log("KEYYYYS");
 		console.log(props.tps.hasTransactionToUndo());
 		if(event.ctrlKey && event.keyCode === 90 && props.tps.hasTransactionToUndo()){
 			tpsUndo();
